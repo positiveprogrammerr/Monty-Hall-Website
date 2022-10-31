@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <meta name="copyright" content="MACode ID, https://macodeid.com/">
+
+  <title>Monty Hall Game</title>
+
+  <link rel="stylesheet" href="../assets/css/maicons.css">
+
+  <link rel="stylesheet" href="../assets/css/bootstrap.css">
+
+  <link rel="stylesheet" href="../assets/vendor/animate/animate.css">
+
+  <link rel="stylesheet" href="../assets/css/theme.css">
+
+  <meta http-equiv="Content-type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-language" content="en">
+  <meta name="keywords" content="try Monty Hall online simulator coin car Larson Texts of Erie math and you">
+  <meta name="description" content="An online simulator for the Monty Hall problem"> 
+  <meta name="author" content="Stefan Knutsson"> 
+
+<script type="text/javascript" async="" src="https://ssl.google-analytics.com/ga.js"></script><script type="text/javascript">
+<!--
+CarPos=0; Coin1Pos=1; Coin2Pos=2;
+Mode=FirstChoice=GuessesKeep=KeepWin=KeepLose=GuessesChange=ChangeWin=ChangeLose=TheRandom=RunAutoCycles=0;
+Cheating=AutoRunning=false;
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function ClearCounters(){
+  if(confirm("Do you want to reset the statistics to zero?")){
+    document.forms.CheatAndInfo.ClearStat.disabled=true;
+    GuessesKeep=KeepWin=KeepLose=GuessesChange=ChangeWin=ChangeLose=0;
+    document.getElementById("WithKeep").innerHTML="0 times";
+    document.getElementById("KeepWin").innerHTML=0;
+    document.getElementById("KeepLose").innerHTML=0;
+    document.getElementById("WithChange").innerHTML="0 times";
+    document.getElementById("ChangeWin").innerHTML=0;
+    document.getElementById("ChangeLose").innerHTML=0;
+    document.getElementById("Line2").innerHTML="cars";
+    document.getElementById("Line3").innerHTML="(0%)";
+    document.getElementById("Line4").innerHTML="coins";
+    document.getElementById("Line5").innerHTML="(0%)";
+    document.getElementById("Line6").innerHTML="cars";
+    document.getElementById("Line7").innerHTML="(0%)";
+    document.getElementById("Line8").innerHTML="coins";
+    document.getElementById("Line9").innerHTML="(0%)";
+  }
+  return true;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function Mclick(pos){
+  if(!AutoRunning){document.forms.AutoRun.Start.disabled=true;} // Disable AutoRun
+  if(Mode==1){Answer=Mode1Act(pos);}
+  if(Mode==0){Answer=Mode0Act(pos);}
+  return Answer;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function Mode0Act(pos){
+  Mode=9;
+  document.getElementById("qm"+pos).innerHTML="!";
+  PosToShow=(pos=="G1" || (pos=="C" && RandomNumber(2)==0)?"G2":"G1");
+  document.getElementById("photo"+PosToShow).style.visibility='visible';
+  document.getElementById("qm"+PosToShow).style.visibility='hidden';
+  FirstChoice=pos;
+  WriteMode1Text();
+  Mode=1;
+  return PosToShow;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function Mode1Act(pos){
+  Mode=9;
+  document.forms.CheatAndInfo.ClearStat.disabled=false;
+  document.getElementById("photoC").style.visibility='visible';
+  document.getElementById("photoG1").style.visibility='visible';
+  document.getElementById("photoG2").style.visibility='visible';
+  document.getElementById("qmC").style.visibility='hidden';
+  document.getElementById("qmG1").style.visibility='hidden';
+  document.getElementById("qmG2").style.visibility='hidden';
+  document.getElementById("Instruct").innerHTML=(pos==FirstChoice?"You kept your choice":"You changed your choice")+", "+(pos=="C"?"You win the car !":"You lose");
+
+  if(pos==FirstChoice) { // Keep choice
+    GuessesKeep++;
+    document.getElementById("WithKeep").innerHTML=GuessesKeep+(GuessesKeep==1?" time":" times");
+    if(pos=="C"){ // Car
+      KeepWin++;
+      document.getElementById("KeepWin").innerHTML=KeepWin;
+      if(KeepWin==1){ document.getElementById("Line2").innerHTML="car"; }
+      if(KeepWin==2){ document.getElementById("Line2").innerHTML="cars"; }
+    } else { // Coin
+      KeepLose++;
+      document.getElementById("KeepLose").innerHTML=KeepLose;
+      if(KeepLose==1){ document.getElementById("Line4").innerHTML="coin"; }
+      if(KeepLose==2){ document.getElementById("Line4").innerHTML="coins"; }
+    }
+    document.getElementById("Line3").innerHTML="(" + Math.round(100*KeepWin/GuessesKeep)+"%)";
+    document.getElementById("Line5").innerHTML="(" + (100-Math.round(100*KeepWin/GuessesKeep))+"%)";
+
+  } else { // Change choice
+    GuessesChange++;
+    document.getElementById("WithChange").innerHTML=GuessesChange+(GuessesChange==1?" time":" times");
+    if(pos=="C"){ // Car
+      ChangeWin++;
+      document.getElementById("ChangeWin").innerHTML=ChangeWin;
+      if(ChangeWin==1){ document.getElementById("Line6").innerHTML="car"; }
+      if(ChangeWin==2){ document.getElementById("Line6").innerHTML="cars"; }
+    } else { // Coin
+      ChangeLose++;
+      document.getElementById("ChangeLose").innerHTML=ChangeLose;
+      if(ChangeLose==1){ document.getElementById("Line8").innerHTML="coin"; }
+      if(ChangeLose==2){ document.getElementById("Line8").innerHTML="coins"; }
+    }
+    document.getElementById("Line7").innerHTML="(" + Math.round(100*ChangeWin/GuessesChange)+"%)";
+    document.getElementById("Line9").innerHTML="(" + (100-Math.round(100*ChangeWin/GuessesChange))+"%)";
+  }
+  Mode=2;
+  return true;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function Mode2Act(){ // Perform moving
+  Mode=9;
+  if(document.getElementById("photoC").style.visibility=="visible"){
+    Cpos=document.getElementById("photoC").style.left; Cpos=parseInt(Cpos.substring(0,Cpos.indexOf("px")));
+    G1pos=document.getElementById("photoG1").style.left; G1pos=parseInt(G1pos.substring(0,G1pos.indexOf("px")));
+    G2pos=document.getElementById("photoG2").style.left; G2pos=parseInt(G2pos.substring(0,G2pos.indexOf("px")));
+    if(Cpos<250){ document.getElementById("photoC").style.left=(Cpos+5)+"px"; }
+    if(Cpos>250){ document.getElementById("photoC").style.left=(Cpos-5)+"px"; }
+    if(G1pos<250){ document.getElementById("photoG1").style.left=(G1pos+5)+"px"; }
+    if(G1pos>250){ document.getElementById("photoG1").style.left=(G1pos-5)+"px"; }
+    if(G2pos<250){ document.getElementById("photoG2").style.left=(G2pos+5)+"px"; }
+    if(G2pos>250){ document.getElementById("photoG2").style.left=(G2pos-5)+"px"; }
+    if(G1pos==G2pos){ // Has reached mid pos
+      document.getElementById("qmC").style.left="250px";
+      document.getElementById("qmG1").style.left="250px";
+      document.getElementById("qmG2").style.left="250px";
+      document.getElementById("qmC").innerHTML="?";
+      document.getElementById("qmG1").innerHTML="?";
+      document.getElementById("qmG2").innerHTML="?";
+      document.getElementById("qmC").style.visibility='visible';
+      document.getElementById("qmG1").style.visibility='visible';
+      document.getElementById("qmG2").style.visibility='visible';
+      document.getElementById("photoC").style.visibility='hidden';
+      document.getElementById("photoG1").style.visibility='hidden';
+      document.getElementById("photoG2").style.visibility='hidden';
+      document.getElementById("Instruct").innerHTML="";
+      setTimeout('Mode2Act();', 222);
+    } else {
+      setTimeout('Mode2Act();', 1);
+    }
+  } else {
+    G1pos=document.getElementById("qmG1").style.left; G1pos=parseInt(G1pos.substring(0,G1pos.indexOf("px")));
+    document.getElementById("qmG1").style.left=(G1pos-5)+"px";
+    G2pos=document.getElementById("qmG2").style.left; G2pos=parseInt(G2pos.substring(0,G2pos.indexOf("px")));
+    document.getElementById("qmG2").style.left=(G2pos+5)+"px";
+    if(G1pos>25){
+      setTimeout('Mode2Act();', 1);
+    } else {
+      setTimeout('PrepareNewRound();', 2);
+    }
+  }
+  return true;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function PrepareNewRound(){
+  ScramblePositions();
+  document.getElementById("qmC").innerHTML="?";
+  document.getElementById("qmG1").innerHTML="?";
+  document.getElementById("qmG2").innerHTML="?";
+  document.getElementById("qmC").style.visibility='visible';
+  document.getElementById("photoC").style.visibility='hidden';
+  document.getElementById("qmG1").style.visibility='visible';
+  document.getElementById("photoG1").style.visibility='hidden';
+  document.getElementById("qmG2").style.visibility='visible';
+  document.getElementById("photoG2").style.visibility='hidden';
+  document.getElementById("Instruct").innerHTML="Select one of the three boxes above";
+  Mode=0;
+  if(Cheating){SelectCheating();}
+  document.forms.AutoRun.Start.disabled=false;
+  return true;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function RandomNumber(SpanWidth){ // This function returns a random number (well, a rather random one)
+  if(TheRandom<=SpanWidth){
+    Now=new Date();
+    TheRandom=SpanWidth+Math.round(Math.pow(Math.round(Now.getTime())%131071,Math.PI));
+  }
+  ReturnValue=TheRandom%SpanWidth;
+  TheRandom=Math.ceil(TheRandom/SpanWidth);
+  return ReturnValue;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function RunAuto(HowToChoose){
+  Mode=9;
+  PrepareNewRound();
+  FirstChoice=RandomNumber(3);
+  FirstChoice=(FirstChoice>0?"G"+FirstChoice:"C");
+  Mode=0;
+  RevealedCoin=Mclick(FirstChoice);
+  Mode=9;
+  SecondChoice=(HowToChoose==1?(FirstChoice=="C"?"G"+(2-eval(RevealedCoin.charAt(1))):"C"):FirstChoice);
+  Mode=1;
+  RevealedCoin=Mclick(SecondChoice);
+  Mode=9;
+  RunAutoCycles--;
+  if(RunAutoCycles>0){
+    setTimeout("RunAuto("+HowToChoose+");",1);
+  } else {
+    PrepareNewRound(); // Scramble
+    RunEnd();
+  }
+  return true;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function RunButton(CyclesToRun,HowToChoose){
+  if(AutoRunning){
+    RunEnd();
+  } else {
+    AutoRunning=true;
+    document.forms.AutoRun.Start.value="Stop";
+    document.forms.AutoRun.Cycles.disabled=true;
+    document.forms.AutoRun.Decision.disabled=true;
+    RunAutoCycles=CyclesToRun;
+    RunAuto(HowToChoose);
+  }
+  return true;
+}
+// --- --- --- --- --- --- --- --- --- ---
+
+function RunEnd(){ // Finish AutoRun
+  RunAutoCycles=0;
+  document.forms.AutoRun.Start.value="Start";
+  document.forms.AutoRun.Cycles.disabled=false;
+  document.forms.AutoRun.Decision.disabled=false;
+  AutoRunning=false;
+  return true;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function ScramblePositions(){
+  CarPos=RandomNumber(3);
+  if(RandomNumber(2)==0){
+    Coin1Pos=CarPos+1; Coin2Pos=CarPos+2;
+  } else {
+    Coin1Pos=CarPos+2; Coin2Pos=CarPos+1;
+  }
+  if(Coin1Pos>2){Coin1Pos-=3;}
+  if(Coin2Pos>2){Coin2Pos-=3;}
+  document.getElementById("qmC").style.left=25+225*CarPos+"px";
+  document.getElementById("photoC").style.left=25+225*CarPos+"px";
+  document.getElementById("qmG1").style.left=25+225*Coin1Pos+"px";
+  document.getElementById("photoG1").style.left=25+225*Coin1Pos+"px";
+  document.getElementById("qmG2").style.left=25+225*Coin2Pos+"px";
+  document.getElementById("photoG2").style.left=25+225*Coin2Pos+"px";
+  return true;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function SelectCheating(){
+  document.getElementById("qmC").innerHTML=Cheating?"C":"?";
+  document.getElementById("qmG1").innerHTML=Cheating?"G":"?";
+  document.getElementById("qmG2").innerHTML=Cheating?"G":"?";
+  if(Mode>0){
+    document.getElementById("qm"+FirstChoice).innerHTML="!";
+    if(Mode==1){ WriteMode1Text(); }
+  }
+  return true;
+}
+
+// --- --- --- --- --- --- --- --- --- ---
+
+function WriteMode1Text(){
+  document.getElementById("Instruct").innerHTML="Click '!' to keep your first choice or '" + (Cheating?(FirstChoice=="C"?"G":"C"):"?") + "' to change it";
+  return true;
+}
+
+//-->
+</script>
+<style type="text/css">
+<!--
+body, select, input {font-family:Arial, Helvetica, sans-serif; color: #333333;margin-top:0px;}
+body,input{
+  margin-bottom: 220px;
+}
+select{
+  font-size: initial;
+}
+body {background-color:#ffffff;padding: 30px;}
+a {color: #3333ff; text-decoration: none; }
+div#alltihop {position:relative; width:650px; margin-left:auto; margin-right:auto; left:-25px;}
+div#Instruct {position:absolute; left:25px; top:320px; width:650px; height:30px; visibility: visible; font-weight: bold; color: #000000; font-size: 18pt; text-align:center;}
+div#header1, h1.subpage-header {position:absolute; left:25px; top:0px; width:650px; height:65px; visibility: visible;}
+div#div8, div#div9 {position:absolute; top:377px; width:300px; height:65px; visibility: hidden; font-size: 12pt; text-align:center; z-index:2; margin-top: 30px;}
+div#div8 {left:25px;}
+div#div9 {left:375px;}
+div#div10 {position:absolute; left:45px; top:455px; width:375px; height:30px; visibility: hidden; font-size: 10pt; text-align:left; z-index:2; margin-top: 65px;}
+div#div11 {position:absolute; left:400px; top:460px; width:275px; height:30px; visibility: hidden; font-size: 10pt; text-align:center; z-index:2; margin-top: 65px;}
+div#helptext {position:absolute; left:25px; top:100px; width:650px; height:390px; visibility: hidden; background-color:#ffffff; z-index:5; font-size: 75%;}
+div#br1, div#br2 {position:absolute; left:25px; width:650px; height:1px; background-color:#0d4d9c;}
+div#br1 {top:364px;}
+div#br2 {top:447px; margin-top: 55px;}
+.box {position:absolute; left:250px; top:100px; width:200px; height:200px; visibility: hidden; font-weight: bold; color: ; background-color:#94c1ff; font-size: 120pt; text-align:center; z-index:2;}
+.hand {cursor:pointer;}
+h1.subpage-header {
+    background: url("/images/subpage_header_bg.png") repeat scroll 0 0 transparent;
+    height: 48px;
+    margin: 0;
+    padding: 22px 0 0 50px;
+    vertical-align: middle;
+    font:21px/1.4em Arial,Verdana,Tahoma,sans-serif;
+    font-weight: bold;
+}
+
+.b{
+  display: inline-block;
+margin-bottom: 30px;
+}
+body{
+  padding-bottom: 150px;
+}
+.mnublue{color:#0A4E9B;}
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.containerr {
+  height: calc(100% - 2rem);
+  background: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.credit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 2rem;
+  font-family: arial;
+}
+
+.switch {
+  position: relative;
+  overflow: hidden;
+  width: 7.5rem;
+  height: 4rem;
+}
+
+.switch input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  opacity: 0;
+}
+
+.switch label {
+  cursor: pointer;
+}
+
+.background {
+  z-index: 1;
+ 
+  width: 7.5rem;
+  height: 4rem;
+  border-radius: 2.5rem;
+  border: 0.25rem solid #202020;
+  background: linear-gradient(to right, #484848 0%,#202020 100%);
+  transition: all 0.3s;
+}
+
+.fill {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 2rem;
+  left: 0;
+  background: #484848;
+  transition: 0.75s all ease;
+}
+
+.switch input:checked ~ .fill {
+  background: #E9F8FD;
+}
+
+.stars1,
+.stars2 {
+  position: absolute;
+  height: 0.4rem;
+  width: 0.4rem; 
+  background: #FFFFFF;
+  border-radius: 50%;
+  transition: 0.3s all ease;
+}
+
+.stars1 {
+  top: 6px;
+  right: 23px;
+}
+
+.stars2 {
+  top: 40px;
+  right: 48px;
+}
+
+.stars1:after,
+.stars1:before,
+.stars2:after,
+.stars2:before{
+  position: absolute;
+  content: "";
+  display: block;
+  height: 0.25rem;
+  width: 0.25rem;
+  background: #FFFFFF;
+  border-radius: 50%;
+  transition: 0.2s all ease;
+}
+
+.stars1:after {
+  top: 8px;
+  right: 20px;
+}
+
+.stars1:before {
+  top: 18px;
+  right: -12px;
+}
+
+.stars2:after {
+  top: -8px;
+  right: -16px;
+}
+
+.stars2:before {
+  top: 6px;
+  right: -26px;
+}
+
+.sun-moon {
+  z-index: 2;
+  position: absolute;
+  left: 0;
+  display: inline-block;
+  height: 3rem;
+  width: 3rem;
+  margin: 0.5rem;
+  background: #FFFDF2;
+  border-radius: 50%;
+  transition: all 0.5s ease;
+  
+  /* Default to Moon */
+  border: 0.25rem solid #DEE2C6;
+}
+
+.sun-moon .dots {
+  position: absolute;
+  top: 3px;
+  left: 23px;
+  height: 1rem;
+  width: 1rem; 
+  background: #EFEEDB;
+  border: 0.25rem solid #DEE2C6;
+  border-radius: 50%;
+  transition: 0.4s all ease;
+}
+
+.sun-moon .dots:after,
+.sun-moon .dots:before {
+  position: absolute;
+  content: "";
+  display: block;
+  height: 0.25rem;
+  width: 0.25rem;
+  background: #EFEEDB;
+  border: 0.25rem solid #DEE2C6;
+  border-radius: 50%;
+  transition: 0.4s all ease;
+}
+
+.sun-moon .dots:after {
+  top: -4px;
+  left: -26px;
+}
+
+.sun-moon .dots:before {
+  top: 18px;
+  left: -10px;
+}
+
+/* Transition to Sun */
+
+.switch input:checked ~ .sun-moon {
+  left: calc(100% - 4rem);
+  background: #F5EC59;
+  border-color: #E7C65C;
+  transform: rotate(-25deg);
+}
+
+.switch input:checked ~ .sun-moon .dots,
+.switch input:checked ~ .sun-moon .dots:after,
+.switch input:checked ~ .sun-moon .dots:before {
+  background: #FFFFFF;
+  border-color: #FFFFFF;
+}
+
+.switch input:checked ~ .sun-moon .dots {
+  height: 1.5rem;
+  width: 1.5rem;
+  top: 0px;
+  left: -20px;
+  transform: rotate(25deg);
+}
+
+.switch input:checked ~ .sun-moon .dots:after {
+  height: 0.65rem;
+  width: 0.65rem;
+  top: 2px;
+  left: -12px;
+}
+
+.switch input:checked ~ .sun-moon .dots:before {
+  height: 0.4rem;
+  width: 0.4rem;
+  top: 6px;
+  left: 14px;
+}
+
+.switch input:checked ~ .background .stars1,
+.switch input:checked ~ .background .stars2 {
+  opacity: 0;
+  transform: translateY(2rem);
+}
+
+.switch input:checked ~ .background {
+  border: 0.25rem solid #78C1D5;
+  background: linear-gradient(to right, #78C1D5 0%, #BBE7F5 100%);
+}
+-->
+</style>
+
+<style type="text/css">@font-face { font-family: Roboto; src: url("chrome-extension://mcgbeeipkmelnpldkobichboakdfaeon/css/Roboto-Regular.ttf"); }</style>
+</head>
+<body>
+
+  <!-- Back to top button -->
+  <div class="back-to-top"></div>
+
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky" data-offset="500">
+      <div class="container">
+
+        <a href="#" class="navbar-brand">MontyHall<span class="text-primary">Game.</span></a>
+
+        <button class="navbar-toggler" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="navbar-collapse collapse" id="navbarContent">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#ab">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="about.html">About</a>
+            </li>
+            <li class="nav-item">
+            
+            </li>
+           
+            <li class="nav-item">
+              <a class="nav-link" href="contact.html">Contact</a>
+            </li>
+            
+          </ul>
+        </div>
+
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="page-banner home-banner">
+        <div class="row align-items-center flex-wrap-reverse h-100">
+          <div class="col-md-6 py-5 wow fadeInLeft">
+            <h1 class="mb-4">Let's play Monty Hall Game</h1>
+            <p class="text-lg text-grey mb-5">The Monty Hall problem is a brain teaser, in the form of a probability puzzle, loosely based on the American television game show Let's Make a Deal and named after its original host, Monty Hall.<br><br>Click the button and learn about this game.</p>
+            <a href="https://youtu.be/9vRUxbzJZ9Y" class="btn btn-primary btn-split">Watch Video <div class="fab"><span class="mai-play"></span></div></a>
+          </div>
+          <div class="col-md-6 py-5 wow zoomIn">
+            <div class="img-fluid text-center">
+              <img src="../assets/img/brain.png" alt="brain" width="390">
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </header>
+
+  <div class="page-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="card-service wow fadeInUp">
+            <div class="header">
+              <img src="../assets/img/services/cup.png" alt="brain" width="80">
+            </div>
+            <div class="body">
+              <h5 class="text-secondary">Champions</h5>
+              <p>When you win this game about 1500 times,you can study programming in Turin University for free.</p>
+            
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card-service wow fadeInUp">
+            <div class="header">
+              <img src="../assets/img/services/memory.svg" alt="memory" width="80">
+            </div>
+            <div class="body">
+              <h5 class="text-secondary">Improve memory</h5>
+              <p>Brain is very important and also memory is important too.You can improve your memory with playing Monty Hall</p>
+            
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card-service wow fadeInUp">
+            <div class="header">
+              <img src="../assets/img/services/free.png" alt="free" width="100">
+            </div>
+            <div class="body">
+              <h5 class="text-secondary">Free games</h5>
+              <p>In our website you can play Monty Hall for free.Maybe in future you can earn money with this game.</p>
+             
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- .container -->
+  </div> <!-- .page-section -->
+
+
+ 
+<body onload="PrepareNewRound(); document.getElementById('div8').style.visibility='visible';  document.getElementById('div9').style.visibility='visible'; document.getElementById('div10').style.visibility='visible'; document.getElementById('div11').style.visibility='visible'; document.getElementById('div12').style.visibility='visible'; document.forms.CheatAndInfo.ClearStat.disabled=true; return true;" data-new-gr-c-s-check-loaded="14.1083.0" data-gr-ext-installed="">
+<noscript><h1 class="text-secondary" >Sorry, this program require Javascript, it&nbsp;will&nbsp; not work for you</h1></noscript>
+<div class="d-flex justify-content-center row align-items-center flex-wrap-reverse h-72">
+          <div class="col-md-6 py-5 wow fadeInLeft" style="visibility: visible; animation-name: fadeInLeft;">
+          
+<div id="alltihop">
+<h1 class="text-secondary" class="subpage-header mnublue">Monty Hall Game</h1> 
+<!--<div id="header1"><img src="popup_box_monty_hall.png" width="275" height="65" alt="Monty Hall"><img src="header_background.png" width="375" height="65" alt=""></div>-->
+<div id="qmC" class="box hand" onmouseover="if(Mode<9){this.style.color='#000000';} return true;" onmouseout="this.style.color='#ffffff'; return true;" onclick="if(!AutoRunning){Mclick('C');} return true;" style="left: 25px; visibility: visible; color: rgb(255, 255, 255);"></div>
+<div id="qmG1" class="box hand" onmouseover="if(Mode<9){this.style.color='#000000';} return true;" onmouseout="this.style.color='#ffffff'; return true;" onclick="if(!AutoRunning){Mclick('G1');} return true;" style="left: 250px; visibility: visible; color: rgb(255, 255, 255);"></div>
+<div id="qmG2" class="box hand" onmouseover="if(Mode<9){this.style.color='#000000';} return true;" onmouseout="this.style.color='#ffffff'; return true;" onclick="if(!AutoRunning){Mclick('G2');} return true;" 
+style="left: 475px; visibility: visible; color: rgb(255, 255, 255);"></div>
+
+<div id="photoC" class="box" onmouseout="if(Mode==2){Mode2Act();} return true;" onclick="if(Mode==2 &amp;&amp; !AutoRunning){Mode2Act();} return true;" style="left: 25px; visibility: hidden;">
+  <img src="img/cc.png" width="200" height="187" alt="Car" style="margin: auto;"></div>
+<div id="photoG1" class="box" onmouseout="if(Mode==2){Mode2Act();} return true;" onclick="if(Mode==2 &amp;&amp; !AutoRunning){Mode2Act();} return true;" style="left: 250px; visibility: hidden;">
+  <img src="img/dd.png" width="200" height="200" alt="Coin"></div>
+<div id="photoG2" class="box" onmouseout="if(Mode==2){Mode2Act();} return true;" onclick="if(Mode==2 &amp;&amp; !AutoRunning){Mode2Act();} return true;" style="left: 475px; visibility: hidden;">
+  <img src="img/dd.png" width="200" height="200" alt="Coin"></div>
+
+<div class="text-secondary" id="Instruct">Select one of the three boxes above</div>
+
+<div id="br1">&nbsp;</div>
+
+<div class="text-secondary" id="div8" style="visibility: visible;">
+<b>Keep choice: <span id="WithKeep">6 times</span></b><br>
+&nbsp;&nbsp; Wins: <span id="KeepWin">3</span> <span id="Line2">cars</span> <span id="Line3">(50%)</span> &nbsp; <br>
+Losses: <span id="KeepLose">3</span> <span id="Line4">coins</span> <span id="Line5">(50%)</span>
+</div>
+
+<div class="text-secondary" id="div9" style="visibility: visible;">
+<b>Change choice: <span id="WithChange">15 times</span></b><br>
+&nbsp;&nbsp; Wins: <span id="ChangeWin">11</span> <span id="Line6">cars</span> <span id="Line7">(73%)</span> &nbsp; <br>
+Losses: <span id="ChangeLose">4</span> <span id="Line8">coins</span> <span id="Line9">(27%)</span>
+</div>
+<br>
+<div id="br2">&nbsp;</div><br><br>
+<br><br><br>
+<div class="text-secondary" id="div10" style="visibility: visible;">
+<form name="AutoRun" action=""><div><b>Run Times:&nbsp;</b> <select name="Cycles" size="1"><option value="10">10</option><option value="1500" selected="10">1500</option><option value="10000">10000</option></select>&nbsp;&nbsp;    <b> </b>
+   <select class="text-secondary" name="Decision"><option value="0"><b>keep</b></option><option value="1"><b>change</b></option></select> <br><br><br> <input class="b btn btn-primary mt-3" type="button" value="Start" name="Start" id="Start" title="Start/stop automatic run" 
+  onclick="RunButton(this.form.Cycles.value,this.form.Decision.value); return true;"></div></form></div>
+&nbsp;&nbsp;&nbsp;
+<div class="text-secondary" id="div11" style="visibility: visible; ">
+<form name="CheatAndInfo" action=""><div>
+  &nbsp; &nbsp; &nbsp; <br><br><br> <input type="button" class="btn btn-primary mt-3" name="ClearStat" id="ClearStat" value="Clear result" title="Clear the counters above" onclick="return ClearCounters();"> 
+  &nbsp; &nbsp; &nbsp; <input type="button" class="btn btn-primary mt-3" value="Help" onclick="document.getElementById('div10').style.visibility='hidden'; document.getElementById('div11').style.visibility='hidden'; 
+  document.getElementById('helptext').style.visibility='visible'; 
+  return true;"></div></form></div>
+
+<div id="helptext" class="text-secondary">
+This program is a simulator for the Monty Hall Problem, as described on the <a class="text-secondary"  onclick="window.open('http://math.andyou.com/388','mayc','toolbar=1,location=1,directories=1,status=1, menubar=1,scrollbars=1,resizable=1,left=0,top=0'); return false;">Our group</a> website.<br><br>
+The simulator randomly positions the car and the coins in the three black boxes. To start a run, click on one of the question marks. The simulator will then open a box with a coin in it. If you have chosen the car, the simulator will randomly select one of the two boxes with a coin. Click again when you have decided if you want to keep or change your first choice.<br><br>
+When you have done your second choice the simulator will reveal the content of all boxes and update the statistics to show the results for changing and keeping respectively. A new run will be prepared when you move the cursor out from the photo or if you click again.<br><br>
+You can let the computer run 10, 100 or 1000 runs after each other. Select the number of runs and if choice shall be kept or changed each time and start with the Start button. The simulator will randomly select a box and keep/change the choice after your wish. You can stop the run with the stop-button. <br><br>
+By checking Cheat the boxes will be marked with C and S to show where the Car and the Coins are. <br><br>
+The clear button will reset the statistics to zero.<br><br><br>
+<form name="CloseHelp" action=""><div style="text-align:center;"><input type="button" class="btn btn-primary mt-3" value=" Ok " onclick="document.getElementById('helptext').style.visibility='hidden'; document.getElementById('div10').style.visibility='visible'; document.getElementById('div11').style.visibility='visible'; return true;"></div></form>
+</div>
+
+<a href="#ab">
+<div class="ads" style="text-align: center;width:100%;height:90px;margin-top: 20px;position:absolute;top:500px;">
+<!-- Bottom_Center_Banner_MathandYOU -->
+<!--<div id='div-gpt-ad-1332246921191-0' style='height:90px;'>-->
+<script type="text/javascript">
+    /*var googletag = googletag || {};
+    googletag.cmd = googletag.cmd || [];
+    (function() {
+    var gads = document.createElement('script');
+    gads.async = true;
+    gads.type = 'text/javascript';
+    var useSSL = 'https:' == document.location.protocol;
+    gads.src = (useSSL ? 'https:' : 'http:') +
+    '//www.googletagservices.com/tag/js/gpt.js';
+    var node = document.getElementsByTagName('script')[0];
+    node.parentNode.insertBefore(gads, node);
+    })();*/
+    </script>
+    
+    <script type="text/javascript">
+    /*googletag.cmd.push(function() {
+    googletag.defineSlot('/7266023/Bottom_Center_Banner_MathandYOU', [728, 90], 'div-gpt-ad-1332246921191-0').addService(googletag.pubads());
+    googletag.defineSlot('/7266023/Toolbox_RightCorner_MathandYOU', [250, 250], 'div-gpt-ad-1332246921191-1').addService(googletag.pubads());
+    googletag.pubads().enableSingleRequest();
+    googletag.enableServices();
+    });*/
+</script>
+<script type="text/javascript">
+//googletag.cmd.push(function() { googletag.display('div-gpt-ad-1332246921191-0'); });
+</script>
+</div> <!-- end of div alltihop -->
+</div>
+ </div>
+        </div>
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-5278230-8']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+<div id="torrent-scanner-popup" style="display: none;"></div><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration>
+
+       
+
+<script src="../assets/js/jquery-3.5.1.min.js"></script>
+
+<script src="../assets/js/bootstrap.bundle.min.js"></script>
+
+<script src="../assets/js/google-maps.js"></script>
+
+<script src="../assets/vendor/wow/wow.min.js"></script>
+
+<script src="../assets/js/theme.js"></script>
+  </a>
+</body>
+</html>
